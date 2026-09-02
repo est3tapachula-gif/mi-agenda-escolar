@@ -2,7 +2,13 @@ import streamlit as st
 import datetime
 import calendar
 from database import inicializar_db
-from gestion_clases import obtener_clases_por_dia, agregar_clase
+from gestion_clases import (
+    obtener_clases_por_dia, 
+    agregar_clase, 
+    obtener_todas_las_clases, 
+    actualizar_clase, 
+    eliminar_clase
+)
 from gestion_tareas import obtener_tareas_pendientes, agregar_tarea, marcar_tarea_completada
 from sesiones_drive import guardar_actividades_sesion
 
@@ -21,7 +27,14 @@ nombre_dia_hoy = dias_lista[hoy.weekday()]
 # Barra lateral para navegación
 opcion_menu = st.sidebar.radio(
     "Navegación", 
-    ["Inicio / Clases de Hoy", "Vista Semanal", "Vista Mensual", "Registrar Nueva Clase", "Tareas y Avisos"]
+    [
+        "Inicio / Clases de Hoy", 
+        "Vista Semanal", 
+        "Vista Mensual", 
+        "Registrar Nueva Clase", 
+        "Editar / Eliminar Clases", 
+        "Tareas y Avisos"
+    ]
 )
 
 # ---------------------------------------------------------
@@ -61,7 +74,6 @@ if opcion_menu == "Inicio / Clases de Hoy":
 elif opcion_menu == "Vista Semanal":
     st.subheader("🗓 Horario General de la Semana")
     
-    # Creamos pestañas para cada día lectivo
     tabs = st.tabs(["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"])
     
     for idx, dia_nombre in enumerate(["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"]):
@@ -88,7 +100,6 @@ elif opcion_menu == "Vista Mensual":
     
     st.write(f"### {calendar.month_name[mes_actual]} {anio_actual}")
     
-    # Obtener y mostrar tareas agendadas en el mes
     tareas = obtener_tareas_pendientes()
     if tareas:
         st.write("**Entregas y Eventos Pendientes este mes:**")
@@ -127,7 +138,59 @@ elif opcion_menu == "Registrar Nueva Clase":
                 st.error("Por favor completa al menos la materia y el grupo.")
 
 # ---------------------------------------------------------
-# PANTALLA 5: TAREAS Y AVISOS
+# PANTALLA 5: EDITAR / ELIMINAR CLASES
+# ---------------------------------------------------------
+elif opcion_menu == "Editar / Eliminar Clases":
+    st.subheader("✏️ Gestionar y Modificar Clases")
+    
+    todas_las_clases = obtener_todas_las_clases()
+    
+    if todas_las_clases:
+        # Formatear opciones para el selector desplegable
+        opciones_clases = {
+            f"{c[3]} | {c[1]} ({c[2]}) [{c[4]}-{c[5]}]": c for c in todas_las_clases
+        }
+        
+        seleccion = st.selectbox("Selecciona la clase que deseas editar o borrar:", list(opciones_clases.keys()))
+        clase_sel = opciones_clases[seleccion]
+        c_id, c_mat, c_grp, c_dia, c_h_ini, c_h_fin, c_link = clase_sel
+        
+        st.markdown("---")
+        st.write(f"### Modificar: **{c_mat} ({c_grp})**")
+        
+        with st.form("form_editar_clase"):
+            edit_materia = st.text_input("Materia", value=c_mat)
+            edit_grupo = st.text_input("Grupo", value=c_grp)
+            
+            idx_dia = dias_lista.index(c_dia) if c_dia in dias_lista else 0
+            edit_dia = st.selectbox("Día de la semana", dias_lista, index=idx_dia)
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                edit_h_ini = st.text_input("Hora Inicio", value=c_h_ini)
+            with col2:
+                edit_h_fin = st.text_input("Hora Fin", value=c_h_fin)
+                
+            edit_link = st.text_input("Enlace de Google Drive", value=c_link if c_link else "")
+            
+            btn_actualizar = st.form_submit_button("💾 Guardar Cambios")
+            
+            if btn_actualizar:
+                actualizar_clase(c_id, edit_materia, edit_grupo, edit_dia, edit_h_ini, edit_h_fin, edit_link)
+                st.success("¡La clase ha sido actualizada correctamente!")
+                st.rerun()
+
+        st.markdown("---")
+        st.write("⚠️ **Zona de Eliminación**")
+        if st.button("🗑️ Eliminar esta Clase", type="secondary"):
+            eliminar_clase(c_id)
+            st.warning(f"La clase '{c_mat}' fue eliminada.")
+            st.rerun()
+    else:
+        st.info("No hay clases registradas en el sistema para editar.")
+
+# ---------------------------------------------------------
+# PANTALLA 6: TAREAS Y AVISOS
 # ---------------------------------------------------------
 elif opcion_menu == "Tareas y Avisos":
     st.subheader("🔔 Tareas y Avisos Programados")
