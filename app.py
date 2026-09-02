@@ -10,7 +10,7 @@ from gestion_clases import (
     eliminar_clase
 )
 from gestion_tareas import obtener_tareas_pendientes, agregar_tarea, marcar_tarea_completada
-from sesiones_drive import guardar_actividades_sesion
+from sesiones_drive import guardar_actividades_sesion, obtener_actividad_sesion
 
 # Configuración inicial de la app móvil
 st.set_page_config(page_title="Agenda Escolar", page_icon="📅", layout="centered")
@@ -22,6 +22,7 @@ st.title("📅 Mi Agenda Escolar")
 
 dias_lista = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 hoy = datetime.date.today()
+fecha_str = hoy.strftime("%Y-%m-%d")
 nombre_dia_hoy = dias_lista[hoy.weekday()]
 
 # Barra lateral para navegación
@@ -49,6 +50,9 @@ if opcion_menu == "Inicio / Clases de Hoy":
         for clase in clases_hoy:
             clase_id, materia, grupo, hora_ini, hora_fin, link_drive = clase
             
+            # Cargar actividades previamente guardadas en la BD
+            act_hoy_guardada, act_sig_guardada = obtener_actividad_sesion(clase_id, fecha_str)
+            
             with st.expander(f"⏰ {hora_ini} - {hora_fin} | {materia} ({grupo})"):
                 st.write(f"**Asignatura:** {materia}")
                 st.write(f"**Grupo:** {grupo}")
@@ -59,12 +63,23 @@ if opcion_menu == "Inicio / Clases de Hoy":
                     st.info("No hay un enlace de Google Drive guardado para esta clase.")
                 
                 st.markdown("---")
-                act_hoy = st.text_area("Actividades realizadas en esta sesión:", key=f"act_{clase_id}")
-                act_sig = st.text_area("Actividades para la siguiente sesión:", key=f"sig_{clase_id}")
+                
+                # Cajas de texto inicializadas con los datos guardados
+                act_hoy = st.text_area(
+                    "Actividades realizadas en esta sesión:", 
+                    value=act_hoy_guardada, 
+                    key=f"act_{clase_id}"
+                )
+                act_sig = st.text_area(
+                    "Actividades para la siguiente sesión:", 
+                    value=act_sig_guardada, 
+                    key=f"sig_{clase_id}"
+                )
                 
                 if st.button("✅ Terminar y Guardar", key=f"btn_{clase_id}"):
-                    guardar_actividades_sesion(clase_id, hoy.strftime("%Y-%m-%d"), act_hoy, act_sig)
-                    st.success("¡Actividades guardadas correctamente!")
+                    guardar_actividades_sesion(clase_id, fecha_str, act_hoy, act_sig)
+                    st.success("¡Actividades guardadas y registradas correctamente!")
+                    st.rerun()
     else:
         st.info("No tienes clases registradas para el día de hoy.")
 
@@ -146,7 +161,6 @@ elif opcion_menu == "Editar / Eliminar Clases":
     todas_las_clases = obtener_todas_las_clases()
     
     if todas_las_clases:
-        # Formatear opciones para el selector desplegable
         opciones_clases = {
             f"{c[3]} | {c[1]} ({c[2]}) [{c[4]}-{c[5]}]": c for c in todas_las_clases
         }
