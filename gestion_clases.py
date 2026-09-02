@@ -15,8 +15,31 @@ def agregar_clase(materia, grupo, dia_semana, hora_inicio, hora_fin, link_drive=
     conexion.close()
     print(f"Clase '{materia}' para el grupo {grupo} guardada exitosamente.")
 
+def obtener_todas_las_clases():
+    """Obtiene la lista completa de clases registradas."""
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    
+    cursor.execute("""
+        SELECT id, materia, grupo, dia_semana, hora_inicio, hora_fin, link_drive 
+        FROM clases 
+        ORDER BY CASE 
+            WHEN dia_semana = 'Lunes' THEN 1
+            WHEN dia_semana = 'Martes' THEN 2
+            WHEN dia_semana = 'Miércoles' THEN 3
+            WHEN dia_semana = 'Jueves' THEN 4
+            WHEN dia_semana = 'Viernes' THEN 5
+            WHEN dia_semana = 'Sábado' THEN 6
+            WHEN dia_semana = 'Domingo' THEN 7
+            ELSE 8 END, hora_inicio ASC
+    """)
+    
+    clases = cursor.fetchall()
+    conexion.close()
+    return clases
+
 def obtener_clases_por_dia(dia_semana):
-    """Obtiene la lista de clases programadas para un día específico (ej. 'Lunes')."""
+    """Obtiene la lista de clases programadas para un día específico."""
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     
@@ -31,19 +54,28 @@ def obtener_clases_por_dia(dia_semana):
     conexion.close()
     return clases
 
-if __name__ == "__main__":
-    # Prueba del módulo: Agregar una clase de ejemplo
-    # Puedes cambiar estos datos por tus datos reales de la EST 3
-    agregar_clase(
-        materia="Español",
-        grupo="2°G",
-        dia_semana="Lunes",
-        hora_inicio="08:00",
-        hora_fin="08:50",
-        link_drive="https://drive.google.com"
-    )
+def actualizar_clase(clase_id, materia, grupo, dia_semana, hora_inicio, hora_fin, link_drive):
+    """Actualiza la información de una clase existente."""
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
     
-    # Probar lectura de clases del Lunes
-    print("\nClases del Lunes:")
-    for clase in obtener_clases_por_dia("Lunes"):
-        print(clase)
+    cursor.execute("""
+        UPDATE clases
+        SET materia = ?, grupo = ?, dia_semana = ?, hora_inicio = ?, hora_fin = ?, link_drive = ?
+        WHERE id = ?
+    """, (materia, grupo, dia_semana, hora_inicio, hora_fin, link_drive, clase_id))
+    
+    conexion.commit()
+    conexion.close()
+    print(f"Clase ID {clase_id} actualizada correctamente.")
+
+def eliminar_clase(clase_id):
+    """Elimina una clase de la base de datos."""
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    
+    cursor.execute("DELETE FROM clases WHERE id = ?", (clase_id,))
+    
+    conexion.commit()
+    conexion.close()
+    print(f"Clase ID {clase_id} eliminada correctamente.")  
