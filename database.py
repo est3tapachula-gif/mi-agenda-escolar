@@ -50,58 +50,61 @@ def inicializar_db():
     cursor.execute("SELECT COUNT(*) FROM clases")
     cantidad = cursor.fetchone()[0]
     
-    # Si la base de datos está vacía, precargamos todo tu horario del PDF con la materia Inglés
+    # URL general de tus Listas de Google Sheets
+    link_listas = "https://docs.google.com/spreadsheets/d/1epXAXdJ5tDi_7zq_hSvV1hUAcMUT3pF7j2yEtgPMibE/edit?usp=sharing"
+    
+    # Si la base de datos está vacía, precargamos todo tu horario del PDF con la materia e enlace a Listas
     if cantidad == 0:
         horario_base = [
             # LUNES
-            ("Inglés", "3H", "Lunes", "13:40", "14:25", ""),
-            ("Inglés", "3J", "Lunes", "14:25", "15:10", ""),
-            ("Inglés", "1G", "Lunes", "15:10", "15:50", ""),
-            ("Inglés", "1G", "Lunes", "16:15", "17:00", ""),
-            ("Inglés", "1H", "Lunes", "17:00", "17:45", ""),
-            ("Inglés", "1H", "Lunes", "17:45", "18:30", ""),
-            ("Inglés", "2J", "Lunes", "18:30", "19:15", ""),
-            ("Inglés", "11", "Lunes", "19:15", "20:00", ""),
+            ("Inglés", "3H", "Lunes", "13:40", "14:25", link_listas),
+            ("Inglés", "3J", "Lunes", "14:25", "15:10", link_listas),
+            ("Inglés", "1G", "Lunes", "15:10", "15:50", link_listas),
+            ("Inglés", "1G", "Lunes", "16:15", "17:00", link_listas),
+            ("Inglés", "1H", "Lunes", "17:00", "17:45", link_listas),
+            ("Inglés", "1H", "Lunes", "17:45", "18:30", link_listas),
+            ("Inglés", "2J", "Lunes", "18:30", "19:15", link_listas),
+            ("Inglés", "11", "Lunes", "19:15", "20:00", link_listas),
             
             # MARTES
-            ("Inglés", "2G", "Martes", "13:40", "14:25", ""),
-            ("Inglés", "3G", "Martes", "14:25", "15:10", ""),
-            ("Inglés", "3G", "Martes", "15:10", "15:50", ""),
-            ("Inglés", "1H", "Martes", "16:15", "17:00", ""),
-            ("Inglés", "31", "Martes", "17:00", "17:45", ""),
-            ("Inglés", "31", "Martes", "17:45", "18:30", ""),
-            ("Inglés", "2K", "Martes", "18:30", "19:15", ""),
-            ("Inglés", "2H", "Martes", "19:15", "20:00", ""),
+            ("Inglés", "2G", "Martes", "13:40", "14:25", link_listas),
+            ("Inglés", "3G", "Martes", "14:25", "15:10", link_listas),
+            ("Inglés", "3G", "Martes", "15:10", "15:50", link_listas),
+            ("Inglés", "1H", "Martes", "16:15", "17:00", link_listas),
+            ("Inglés", "31", "Martes", "17:00", "17:45", link_listas),
+            ("Inglés", "31", "Martes", "17:45", "18:30", link_listas),
+            ("Inglés", "2K", "Martes", "18:30", "19:15", link_listas),
+            ("Inglés", "2H", "Martes", "19:15", "20:00", link_listas),
             
             # MIÉRCOLES
-            ("Inglés", "3H", "Miércoles", "13:40", "14:25", ""),
-            ("Inglés", "3H", "Miércoles", "14:25", "15:10", ""),
-            ("Inglés", "1K", "Miércoles", "15:10", "15:50", ""),
-            ("Inglés", "1K", "Miércoles", "16:15", "17:00", ""),
-            ("Inglés", "2G", "Miércoles", "17:00", "17:45", ""),
-            ("Inglés", "2G", "Miércoles", "17:45", "18:30", ""),
-            ("Inglés", "21", "Miércoles", "18:30", "19:15", ""),
-            ("Inglés", "21", "Miércoles", "19:15", "20:00", ""),
+            ("Inglés", "3H", "Miércoles", "13:40", "14:25", link_listas),
+            ("Inglés", "3H", "Miércoles", "14:25", "15:10", link_listas),
+            ("Inglés", "1K", "Miércoles", "15:10", "15:50", link_listas),
+            ("Inglés", "1K", "Miércoles", "16:15", "17:00", link_listas),
+            ("Inglés", "2G", "Miércoles", "17:00", "17:45", link_listas),
+            ("Inglés", "2G", "Miércoles", "17:45", "18:30", link_listas),
+            ("Inglés", "21", "Miércoles", "18:30", "19:15", link_listas),
+            ("Inglés", "21", "Miércoles", "19:15", "20:00", link_listas),
             
             # JUEVES
-            ("Inglés", "2J", "Jueves", "13:40", "14:25", ""),
-            ("Inglés", "2J", "Jueves", "14:25", "15:10", ""),
-            ("Inglés", "2K", "Jueves", "15:10", "15:50", ""),
-            ("Inglés", "2K", "Jueves", "16:15", "17:00", ""),
-            ("Inglés", "1K", "Jueves", "17:00", "17:45", ""),
-            ("Inglés", "1J", "Jueves", "17:45", "18:30", ""),
-            ("Inglés", "2H", "Jueves", "18:30", "19:15", ""),
-            ("Inglés", "2H", "Jueves", "19:15", "20:00", ""),
+            ("Inglés", "2J", "Jueves", "13:40", "14:25", link_listas),
+            ("Inglés", "2J", "Jueves", "14:25", "15:10", link_listas),
+            ("Inglés", "2K", "Jueves", "15:10", "15:50", link_listas),
+            ("Inglés", "2K", "Jueves", "16:15", "17:00", link_listas),
+            ("Inglés", "1K", "Jueves", "17:00", "17:45", link_listas),
+            ("Inglés", "1J", "Jueves", "17:45", "18:30", link_listas),
+            ("Inglés", "2H", "Jueves", "18:30", "19:15", link_listas),
+            ("Inglés", "2H", "Jueves", "19:15", "20:00", link_listas),
             
             # VIERNES
-            ("Inglés", "31", "Viernes", "13:40", "14:25", ""),
-            ("Inglés", "1J", "Viernes", "14:25", "15:10", ""),
-            ("Inglés", "1J", "Viernes", "15:10", "15:50", ""),
-            ("Inglés", "1G", "Viernes", "16:15", "17:00", ""),
-            ("Inglés", "3G", "Viernes", "17:00", "17:45", ""),
-            ("Inglés", "21", "Viernes", "17:45", "18:30", ""),
-            ("Inglés", "11", "Viernes", "18:30", "19:15", ""),
-            ("Inglés", "11", "Viernes", "19:15", "20:00", "")
+            ("Inglés", "31", "Viernes", "13:40", "14:25", link_listas),
+            ("Inglés", "1J", "Viernes", "14:25", "15:10", link_listas),
+            ("Inglés", "1J", "Viernes", "15:10", "15:50", link_listas),
+            ("Inglés", "1G", "Viernes", "16:15", "17:00", link_listas),
+            ("Inglés", "3G", "Viernes", "17:00", "17:45", link_listas),
+            ("Inglés", "21", "Viernes", "17:45", "18:30", link_listas),
+            ("Inglés", "11", "Viernes", "18:30", "19:15", link_listas),
+            ("Inglés", "11", "Viernes", "19:15", "20:00", link_listas)
         ]
         
         cursor.executemany("""
