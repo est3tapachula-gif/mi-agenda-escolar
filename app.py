@@ -1,6 +1,7 @@
 import streamlit as st
 import datetime
 import calendar
+from datetime import timezone, timedelta
 from database import inicializar_db
 from gestion_clases import (
     obtener_clases_por_dia, 
@@ -12,18 +13,21 @@ from gestion_clases import (
 from gestion_tareas import obtener_tareas_pendientes, agregar_tarea, marcar_tarea_completada
 from sesiones_drive import guardar_actividades_sesion, obtener_actividad_sesion
 
-# Configuración inicial de la app móvil
+# Configuración de página para vista móvil
 st.set_page_config(page_title="Agenda Escolar", page_icon="📅", layout="centered")
 
 # Inicializar Base de Datos
 inicializar_db()
 
-st.title("📅 Mi Agenda Escolar")
+# Ajuste de Zona Horaria (UTC-6) para mantener el día correcto
+TZ_MEX = timezone(timedelta(hours=-6))
+hoy = datetime.datetime.now(TZ_MEX).date()
+fecha_str = hoy.strftime("%Y-%m-%d")
 
 dias_lista = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
-hoy = datetime.date.today()
-fecha_str = hoy.strftime("%Y-%m-%d")
 nombre_dia_hoy = dias_lista[hoy.weekday()]
+
+st.title("📅 Mi Agenda Escolar")
 
 # Barra lateral para navegación
 opcion_menu = st.sidebar.radio(
@@ -50,7 +54,7 @@ if opcion_menu == "Inicio / Clases de Hoy":
         for clase in clases_hoy:
             clase_id, materia, grupo, hora_ini, hora_fin, link_drive = clase
             
-            # Cargar actividades previamente guardadas en la BD
+            # Cargar actividades guardadas en la BD
             act_hoy_guardada, act_sig_guardada = obtener_actividad_sesion(clase_id, fecha_str)
             
             with st.expander(f"⏰ {hora_ini} - {hora_fin} | {materia} ({grupo})"):
@@ -78,7 +82,7 @@ if opcion_menu == "Inicio / Clases de Hoy":
                 
                 if st.button("✅ Terminar y Guardar", key=f"btn_{clase_id}"):
                     guardar_actividades_sesion(clase_id, fecha_str, act_hoy, act_sig)
-                    st.success("¡Actividades guardadas y registradas correctamente!")
+                    st.success("¡Actividades guardadas correctamente!")
                     st.rerun()
     else:
         st.info("No tienes clases registradas para el día de hoy.")
@@ -131,17 +135,17 @@ elif opcion_menu == "Registrar Nueva Clase":
     st.subheader("➕ Dar de Alta una Materia / Clase")
     
     with st.form("form_clase"):
-        materia = st.text_input("Nombre de la Materia (ej. Español)")
-        grupo = st.text_input("Grupo (ej. 2°G)")
+        materia = st.text_input("Nombre de la Materia (ej. Inglés)")
+        grupo = st.text_input("Grupo (ej. 1G)")
         dia_semana = st.selectbox("Día de la semana", dias_lista)
         
         col1, col2 = st.columns(2)
         with col1:
-            hora_inicio = st.text_input("Hora Inicio (ej. 08:00)")
+            hora_inicio = st.text_input("Hora Inicio (ej. 13:40)")
         with col2:
-            hora_fin = st.text_input("Hora Fin (ej. 08:50)")
+            hora_fin = st.text_input("Hora Fin (ej. 14:25)")
             
-        link_drive = st.text_input("Enlace a carpeta/archivo de Google Drive (Listas/Rúbricas)")
+        link_drive = st.text_input("Enlace a listas o Google Drive")
         
         btn_guardar = st.form_submit_button("Guardar Clase")
         
