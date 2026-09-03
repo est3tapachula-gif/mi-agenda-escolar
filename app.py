@@ -19,7 +19,7 @@ st.set_page_config(page_title="Agenda Escolar", page_icon="📅", layout="center
 # Inicializar Base de Datos
 inicializar_db()
 
-# Ajuste de Zona Horaria (UTC-6) para mantener el día correcto
+# Ajuste de Zona Horaria (UTC-6)
 TZ_MEX = timezone(timedelta(hours=-6))
 hoy = datetime.datetime.now(TZ_MEX).date()
 fecha_str = hoy.strftime("%Y-%m-%d")
@@ -54,8 +54,8 @@ if opcion_menu == "Inicio / Clases de Hoy":
         for clase in clases_hoy:
             clase_id, materia, grupo, hora_ini, hora_fin, link_drive = clase
             
-            # Cargar actividades guardadas en la BD
-            act_hoy_guardada, act_sig_guardada = obtener_actividad_sesion(clase_id, fecha_str)
+            # Cargar actividades de hoy (traspasando la nota previa del grupo si aplica)
+            act_hoy_guardada, act_sig_guardada = obtener_actividad_sesion(clase_id, fecha_str, grupo=grupo)
             
             with st.expander(f"⏰ {hora_ini} - {hora_fin} | {materia} ({grupo})"):
                 st.write(f"**Asignatura:** {materia}")
@@ -68,7 +68,7 @@ if opcion_menu == "Inicio / Clases de Hoy":
                 
                 st.markdown("---")
                 
-                # Cajas de texto inicializadas con los datos guardados
+                # Cajas de texto inicializadas con el arrastre de información
                 act_hoy = st.text_area(
                     "Actividades realizadas en esta sesión:", 
                     value=act_hoy_guardada, 
@@ -82,7 +82,7 @@ if opcion_menu == "Inicio / Clases de Hoy":
                 
                 if st.button("✅ Terminar y Guardar", key=f"btn_{clase_id}"):
                     guardar_actividades_sesion(clase_id, fecha_str, act_hoy, act_sig)
-                    st.success("¡Actividades guardadas correctamente!")
+                    st.success("¡Actividades guardadas y vinculadas correctamente!")
                     st.rerun()
     else:
         st.info("No tienes clases registradas para el día de hoy.")
