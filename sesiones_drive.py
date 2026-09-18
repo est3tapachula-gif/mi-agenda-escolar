@@ -29,15 +29,13 @@ def guardar_actividades_sesion(clase_id, fecha, actividades_hoy, actividades_sig
 
 def obtener_actividad_sesion(clase_id, fecha, grupo=None):
     """
-    Obtiene las actividades guardadas para la fecha actual. 
-    Si está en blanco y se proporciona el grupo, busca la última sesión previa 
-    registrada para ese mismo grupo (incluso si fue en un módulo anterior del mismo día) 
-    para traspasar lo planeado en 'actividades_siguiente'.
+    Obtiene las actividades de la sesión. Si está en blanco, busca la última 
+    nota guardada en 'actividades_siguiente' de cualquier sesión previa del mismo grupo.
     """
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     
-    # 1. Buscar si ya hay algo guardado para este módulo específico
+    # 1. Buscar si esta sesión específica ya tiene datos guardados
     cursor.execute("""
         SELECT actividades_hoy, actividades_siguiente 
         FROM sesiones 
@@ -49,7 +47,7 @@ def obtener_actividad_sesion(clase_id, fecha, grupo=None):
     act_hoy = resultado[0] if resultado and resultado[0] else ""
     act_sig = resultado[1] if resultado and resultado[1] else ""
     
-    # 2. Si 'actividades_hoy' está vacío, buscar la última sesión guardada del grupo
+    # 2. Si el campo 'actividades_hoy' está vacío, traer lo planeado en la sesión anterior del grupo
     if not act_hoy and grupo:
         cursor.execute("""
             SELECT s.actividades_siguiente 
@@ -59,13 +57,13 @@ def obtener_actividad_sesion(clase_id, fecha, grupo=None):
               AND s.clase_id != ?
               AND s.actividades_siguiente IS NOT NULL 
               AND s.actividades_siguiente != ''
-            ORDER BY s.fecha DESC, s.id DESC
+            ORDER BY s.id DESC
             LIMIT 1
         """, (grupo, clase_id))
         
-        ultima_siguiente = cursor.fetchone()
-        if ultima_siguiente and ultima_siguiente[0]:
-            act_hoy = ultima_siguiente[0]  # Traspasa la nota previa del grupo
+        ultima_nota = cursor.fetchone()
+        if ultima_nota and ultima_nota[0]:
+            act_hoy = ultima_nota[0]
             
     conexion.close()
     return act_hoy, act_sig
