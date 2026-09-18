@@ -30,13 +30,14 @@ def guardar_actividades_sesion(clase_id, fecha, actividades_hoy, actividades_sig
 def obtener_actividad_sesion(clase_id, fecha, grupo=None):
     """
     Obtiene las actividades guardadas para la fecha actual. 
-    Si está en blanco y se proporciona el grupo, busca la nota de la última FECHA ANTERIOR 
-    de ese mismo grupo para traspasar lo planeado en 'actividades_siguiente'.
+    Si está en blanco y se proporciona el grupo, busca la última sesión previa 
+    registrada para ese mismo grupo (incluso si fue en un módulo anterior del mismo día) 
+    para traspasar lo planeado en 'actividades_siguiente'.
     """
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     
-    # 1. Buscar si ya hay algo escrito hoy para esta clase específica
+    # 1. Buscar si ya hay algo guardado para este módulo específico
     cursor.execute("""
         SELECT actividades_hoy, actividades_siguiente 
         FROM sesiones 
@@ -48,23 +49,23 @@ def obtener_actividad_sesion(clase_id, fecha, grupo=None):
     act_hoy = resultado[0] if resultado and resultado[0] else ""
     act_sig = resultado[1] if resultado and resultado[1] else ""
     
-    # 2. Si el campo de hoy está vacío, buscar la nota dejada en un DÍA ANTERIOR (< fecha)
+    # 2. Si 'actividades_hoy' está vacío, buscar la última sesión guardada del grupo
     if not act_hoy and grupo:
         cursor.execute("""
             SELECT s.actividades_siguiente 
             FROM sesiones s
             JOIN clases c ON s.clase_id = c.id
             WHERE c.grupo = ? 
-              AND s.fecha < ? 
+              AND s.clase_id != ?
               AND s.actividades_siguiente IS NOT NULL 
               AND s.actividades_siguiente != ''
             ORDER BY s.fecha DESC, s.id DESC
             LIMIT 1
-        """, (grupo, fecha))
+        """, (grupo, clase_id))
         
         ultima_siguiente = cursor.fetchone()
         if ultima_siguiente and ultima_siguiente[0]:
-            act_hoy = ultima_siguiente[0]  # Traspasa la nota previa
+            act_hoy = ultima_siguiente[0]  # Traspasa la nota previa del grupo
             
     conexion.close()
     return act_hoy, act_sig
