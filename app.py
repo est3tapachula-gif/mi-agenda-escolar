@@ -54,7 +54,7 @@ if opcion_menu == "Inicio / Clases de Hoy":
         for clase in clases_hoy:
             clase_id, materia, grupo, hora_ini, hora_fin, link_drive = clase
             
-            # Cargar actividades de hoy (traspasando la nota previa del grupo si aplica)
+            # Cargar actividades guardadas o heredadas
             act_hoy_guardada, act_sig_guardada = obtener_actividad_sesion(clase_id, fecha_str, grupo=grupo)
             
             with st.expander(f"⏰ {hora_ini} - {hora_fin} | {materia} ({grupo})"):
@@ -68,21 +68,21 @@ if opcion_menu == "Inicio / Clases de Hoy":
                 
                 st.markdown("---")
                 
-                # Cajas de texto inicializadas con el arrastre de información
+                # Cajas de texto con claves dinámicas para evitar conflictos de caché
                 act_hoy = st.text_area(
                     "Actividades realizadas en esta sesión:", 
                     value=act_hoy_guardada, 
-                    key=f"act_{clase_id}"
+                    key=f"act_{clase_id}_{fecha_str}"
                 )
                 act_sig = st.text_area(
                     "Actividades para la siguiente sesión:", 
                     value=act_sig_guardada, 
-                    key=f"sig_{clase_id}"
+                    key=f"sig_{clase_id}_{fecha_str}"
                 )
                 
-                if st.button("✅ Terminar y Guardar", key=f"btn_{clase_id}"):
+                if st.button("✅ Terminar y Guardar", key=f"btn_{clase_id}_{fecha_str}"):
                     guardar_actividades_sesion(clase_id, fecha_str, act_hoy, act_sig)
-                    st.success("¡Actividades guardadas y vinculadas correctamente!")
+                    st.success("¡Actividades guardadas correctamente!")
                     st.rerun()
     else:
         st.info("No tienes clases registradas para el día de hoy.")
